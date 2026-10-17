@@ -4,16 +4,40 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Data Jamaah MZPC</title>
+<!-- Memuat Font Google (Poppins) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f0f4f8;color:#1e293b;padding:14px;font-size:14px}
+  
+  /* MENGUBAH JENIS FONT (Huruf) */
+  body{
+    font-family: 'Poppins', 'Segoe UI', Tahoma, sans-serif; 
+    background:#f0f4f8;color:#1e293b;padding:14px;font-size:14px
+  }
+  
   .container{max-width:800px;margin:0 auto}
   
-  header{background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;padding:18px 22px;border-radius:12px;margin-bottom:14px;box-shadow:0 4px 12px rgba(15,118,110,.3);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
-  header h1{font-size:20px}
-  header p{font-size:12px;opacity:.9;margin-top:3px}
+  /* HEADER & LOGO */
+  header{
+    background:linear-gradient(135deg,#0f766e,#14b8a6);
+    color:#fff;padding:18px 22px;border-radius:12px;margin-bottom:14px;
+    box-shadow:0 4px 12px rgba(15,118,110,.3);
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px
+  }
+  .header-left{display:flex;align-items:center;gap:14px}
   
-  .btn{padding:9px 15px;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600;transition:.15s;white-space:nowrap}
+  /* Gaya untuk Logo */
+  .logo-img{
+    width:48px;height:48px;object-fit:contain;border-radius:8px;background:#fff;padding:4px;
+  }
+  
+  header h1{font-size:20px;font-weight:600}
+  header p{font-size:12px;opacity:.9;margin-top:3px;font-weight:300}
+  
+  .btn{padding:9px 15px;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:500;transition:.15s;white-space:nowrap;font-family:'Poppins',sans-serif}
   .btn:hover{opacity:.88;transform:translateY(-1px)}
   .btn-primary{background:#0f766e;color:#fff}
   .btn-success{background:#16a34a;color:#fff}
@@ -28,38 +52,35 @@
   .stat-card .value{font-size:20px;font-weight:700;color:#0f766e}
   
   .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center;background:#fff;padding:10px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-  .toolbar input,.toolbar select{padding:8px 11px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:#fff;font-family:inherit}
+  .toolbar input,.toolbar select{padding:8px 11px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:#fff;font-family:'Poppins',sans-serif}
   .toolbar input[type=text]{flex:1;min-width:200px}
   
-  /* List Nama */
   .list-wrap{display:flex;flex-direction:column;gap:8px}
   .name-card{background:#fff;padding:14px 18px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08);cursor:pointer;transition:.15s;display:flex;justify-content:space-between;align-items:center;border-left:4px solid #14b8a6}
   .name-card:hover{transform:translateX(4px);box-shadow:0 3px 8px rgba(15,118,110,.15)}
   .name-card .name{font-size:15px;font-weight:600;color:#0f172a}
-  .name-card .sub{font-size:12px;color:#64748b;margin-top:2px}
+  .name-card .sub{font-size:12px;color:#64748b;margin-top:2px;font-weight:300}
   .name-card .arrow{color:#cbd5e1;font-size:18px}
   .empty{text-align:center;padding:40px;color:#94a3b8;background:#fff;border-radius:12px}
 
-  /* Modal / Pop-up */
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:100;align-items:center;justify-content:center;padding:14px}
   .modal-overlay.active{display:flex}
   .modal{background:#fff;border-radius:14px;width:100%;max-width:750px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,.3);display:flex;flex-direction:column}
   .modal-header{padding:18px 24px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:14px 14px 0 0;position:sticky;top:0;z-index:1}
-  .modal-header h2{font-size:18px;color:#0f766e}
+  .modal-header h2{font-size:18px;color:#0f766e;font-weight:600}
   .close-btn{background:none;border:none;font-size:28px;cursor:pointer;color:#64748b;line-height:1;padding:0 5px}
   
   .modal-body{padding:20px 24px}
   .detail-grid{display:grid;grid-template-columns:150px 1fr;gap:10px 16px;font-size:13.5px}
-  .detail-label{color:#64748b;font-weight:600}
-  .detail-value{color:#1e293b}
+  .detail-label{color:#64748b;font-weight:500}
+  .detail-value{color:#1e293b;font-weight:400}
   .detail-value.empty-val{color:#cbd5e1;font-style:italic}
 
-  /* Form Edit */
   .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .form-group{display:flex;flex-direction:column;gap:3px}
   .form-group.full{grid-column:1/-1}
-  .form-group label{font-size:12px;font-weight:600;color:#475569}
-  .form-group input,.form-group textarea{padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;font-family:inherit}
+  .form-group label{font-size:12px;font-weight:500;color:#475569}
+  .form-group input,.form-group textarea{padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;font-family:'Poppins',sans-serif}
   .form-group input:focus{outline:2px solid #14b8a6;border-color:transparent}
   
   .modal-footer{padding:16px 24px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border-radius:0 0 14px 14px;position:sticky;bottom:0;z-index:1}
@@ -80,9 +101,16 @@
 <body>
 <div class="container">
   <header>
-    <div>
-      <h1>📖 Data Jamaah MZPC</h1>
-      <p>Klik nama jamaah untuk melihat biodata lengkap</p>
+    <div class="header-left">
+      <!-- MASUKKAN LOGO ANDA DI SINI -->
+      <!-- Ganti tulisan "LOGO_URL_ANDA_DI_SINI" dengan link gambar logo Anda. 
+           Contoh: src="https://i.ibb.co/xxxx/logo.png" -->
+      <img src="LOGO_URL_ANDA_DI_SINI" alt="Logo MZPC" class="logo-img" onerror="this.style.display='none'">
+      
+      <div>
+        <h1>📖 Data Jamaah MZPC</h1>
+        <p>Klik nama jamaah untuk melihat biodata lengkap</p>
+      </div>
     </div>
     <button class="btn btn-success" onclick="openForm()">+ Tambah Jamaah</button>
   </header>
@@ -111,12 +139,10 @@
       <button class="close-btn" onclick="closeModal()">×</button>
     </div>
     
-    <!-- View Mode (Biodata) -->
     <div class="modal-body" id="viewMode">
       <div class="detail-grid" id="detailContent"></div>
     </div>
     
-    <!-- Edit Mode (Form) -->
     <div class="modal-body" id="editMode" style="display:none">
       <form id="jamaahForm" onsubmit="saveData(event)">
         <input type="hidden" id="editIndex">
@@ -144,9 +170,7 @@
 
     <div class="modal-footer">
       <div id="deleteWrapper"></div>
-      <div class="footer-right" id="footerButtons">
-        <!-- Tombol berubah tergantung mode -->
-      </div>
+      <div class="footer-right" id="footerButtons"></div>
     </div>
   </div>
 </div>
@@ -266,7 +290,6 @@ function updateFilters(){
   if(aSet.includes(ca))aSel.value=ca;
 }
 
-/* ===== DETAIL VIEW ===== */
 const LABELS = {
   ttl:'Tempat, Tgl Lahir', alamat:'Alamat', hp:'No. HP/WA', telp:'Telp Keluarga',
   pekerjaan:'Pekerjaan', pendidikan:'Pendidikan', pasangan:'Suami/Istri',
@@ -293,7 +316,6 @@ function openDetail(idx){
   }
   document.getElementById('detailContent').innerHTML = html;
   
-  // Footer buttons (View Mode)
   document.getElementById('deleteWrapper').innerHTML = 
     `<button class="btn btn-danger" onclick="deleteData(${idx})">🗑️ Hapus</button>`;
   document.getElementById('footerButtons').innerHTML = 
@@ -303,7 +325,6 @@ function openDetail(idx){
   document.getElementById('modalOverlay').classList.add('active');
 }
 
-/* ===== EDIT MODE ===== */
 const FIELDS=['nama','ttl','alamat','hp','telp','pekerjaan','pendidikan','pasangan','ayah','ibu','masuk','suluk','sulukke','amalan','sakit','amalansebelum','amalansejak'];
 
 function switchToEdit(){
@@ -315,7 +336,6 @@ function switchToEdit(){
   document.getElementById('editIndex').value=idx;
   FIELDS.forEach(f=>document.getElementById('f_'+f).value=idx!==undefined?(data[idx][f]||''):'');
   
-  // Footer buttons (Edit Mode)
   document.getElementById('deleteWrapper').innerHTML = '';
   document.getElementById('footerButtons').innerHTML = 
     `<button class="btn btn-secondary" onclick="cancelEdit()">Batal</button>
@@ -325,8 +345,8 @@ function switchToEdit(){
 }
 
 function cancelEdit(){
-  if(currentIndex===-1) closeModal(); // Jika dari tombol Tambah
-  else openDetail(currentIndex); // Kembali ke detail
+  if(currentIndex===-1) closeModal();
+  else openDetail(currentIndex);
 }
 
 function openForm(){
@@ -350,7 +370,7 @@ function saveData(e){
     data[parseInt(idx)]=obj;
     showToast('✅ Data berhasil diperbarui');
     currentIndex = parseInt(idx);
-    openDetail(currentIndex); // Kembali tampilkan detail setelah edit
+    openDetail(currentIndex);
   }
   save(); render();
 }
@@ -386,13 +406,11 @@ function showToast(m){
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2400);
 }
 
-/* ===== EVENTS ===== */
 document.getElementById('searchInput').addEventListener('input',render);
 document.getElementById('filterAmalan').addEventListener('change',render);
 document.getElementById('modalOverlay').addEventListener('click',e=>{ if(e.target.id==='modalOverlay')closeModal(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeModal(); });
 
-/* ===== START ===== */
 loadData(); render();
 </script>
 </body>
