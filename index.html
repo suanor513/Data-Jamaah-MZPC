@@ -4,35 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Data Jamaah MZPC</title>
-<!-- Memuat Font Google (Poppins) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  
-  /* MENGUBAH JENIS FONT (Huruf) */
-  body{
-    font-family: 'Poppins', 'Segoe UI', Tahoma, sans-serif; 
-    background:#f0f4f8;color:#1e293b;padding:14px;font-size:14px
-  }
-  
+  body{font-family:'Poppins','Segoe UI',Tahoma,sans-serif;background:#f0f4f8;color:#1e293b;padding:14px;font-size:14px}
   .container{max-width:800px;margin:0 auto}
   
-  /* HEADER & LOGO */
-  header{
-    background:linear-gradient(135deg,#0f766e,#14b8a6);
-    color:#fff;padding:18px 22px;border-radius:12px;margin-bottom:14px;
-    box-shadow:0 4px 12px rgba(15,118,110,.3);
-    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px
-  }
+  header{background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;padding:18px 22px;border-radius:12px;margin-bottom:14px;box-shadow:0 4px 12px rgba(15,118,110,.3);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
   .header-left{display:flex;align-items:center;gap:14px}
-  
-  /* Gaya untuk Logo */
-  .logo-img{
-    width:48px;height:48px;object-fit:contain;border-radius:8px;background:#fff;padding:4px;
-  }
+  .logo-img{width:48px;height:48px;object-fit:contain;border-radius:8px;background:#fff;padding:4px}
   
   header h1{font-size:20px;font-weight:600}
   header p{font-size:12px;opacity:.9;margin-top:3px;font-weight:300}
@@ -102,11 +85,8 @@
 <div class="container">
   <header>
     <div class="header-left">
-      <!-- MASUKKAN LOGO ANDA DI SINI -->
-      <!-- Ganti tulisan "LOGO_URL_ANDA_DI_SINI" dengan link gambar logo Anda. 
-           Contoh: src="https://i.ibb.co/xxxx/logo.png" -->
+      <!-- PASTIKAN LINK LOGO ANDA MASIH ADA DI SINI -->
       <img src="https://raw.githubusercontent.com/suanor513/Data-Jamaah-MZPC/main/MZPC%20ssuai%20kode.png" alt="Logo MZPC" class="logo-img" onerror="this.style.display='none'">
-      
       <div>
         <h1>📖 Data Jamaah MZPC</h1>
         <p>Klik nama jamaah untuk melihat biodata lengkap</p>
@@ -234,8 +214,21 @@ const INITIAL_DATA=[
 {nama:"SUCI WAHYUNI",ttl:"Puruk Cahu, 07 Mei 1980",alamat:"Jl. Bondang III, Gg. Afiyah II, Puruk Cahu",hp:"0858 2886 1269",telp:"-",pekerjaan:"IRT",pendidikan:"SMK",pasangan:"Doly Supomo",ayah:"Supanto",ibu:"",masuk:"28 September 2024",suluk:"-",sulukke:"-",amalan:"IZ",sakit:"",amalansebelum:"",amalansejak:""}
 ];
 
-const STORAGE_KEY='mzpc_jamaah_data_v2';
+// Kunci penyimpanan baru agar tidak bentrok dengan versi lama
+const STORAGE_KEY='mzpc_jamaah_data_v3'; 
 let data=[],filteredData=[],currentIndex=-1;
+
+// Fungsi simpan dengan validasi ketat
+function saveDataToStorage(newData){
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
+    return true; // Berhasil
+  } catch (e) {
+    console.error("Gagal menyimpan:", e);
+    alert("⚠️ GAGAL MENYIMPAN DATA!\n\nPenyimpanan browser Anda mungkin penuh atau sedang dalam mode Incognito (Penyamaran). Silakan ekspor CSV untuk backup.");
+    return false;
+  }
+}
 
 function loadData(){
   try{
@@ -244,7 +237,6 @@ function loadData(){
     if(!Array.isArray(data)||data.length===0) data=JSON.parse(JSON.stringify(INITIAL_DATA));
   }catch(e){ data=JSON.parse(JSON.stringify(INITIAL_DATA)); }
 }
-function save(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); }
 function esc(s){ return s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function render(){
@@ -327,7 +319,6 @@ function openDetail(idx){
 
 const FIELDS=['nama','ttl','alamat','hp','telp','pekerjaan','pendidikan','pasangan','ayah','ibu','masuk','suluk','sulukke','amalan','sakit','amalansebelum','amalansejak'];
 
-// Fungsi khusus untuk Tombol Edit dari Detail
 function switchToEdit(){
   const idx=currentIndex;
   document.getElementById('modalTitle').textContent = 'Edit Jamaah';
@@ -345,26 +336,21 @@ function switchToEdit(){
   setTimeout(()=>document.getElementById('f_nama').focus(),50);
 }
 
-// Fungsi khusus untuk Tombol Tambah (BARU & DIPERBAIKI)
 function openForm(){
-  currentIndex=-1; // Pastikan tidak sedang mengedit data yang ada
+  currentIndex=-1; 
   
-  // Siapkan tampilan Form
   document.getElementById('modalTitle').textContent = 'Tambah Jamaah Baru';
   document.getElementById('viewMode').style.display='none';
   document.getElementById('editMode').style.display='block';
   
-  // Kosongkan form
   document.getElementById('editIndex').value='';
   FIELDS.forEach(f=>document.getElementById('f_'+f).value='');
   
-  // Atur tombol footer
   document.getElementById('deleteWrapper').innerHTML = '';
   document.getElementById('footerButtons').innerHTML = 
     `<button class="btn btn-secondary" onclick="closeModal()">Batal</button>
      <button class="btn btn-primary" onclick="document.getElementById('jamaahForm').requestSubmit()">💾 Simpan Baru</button>`;
   
-  // Tampilkan Modal
   document.getElementById('modalOverlay').classList.add('active');
   setTimeout(()=>document.getElementById('f_nama').focus(),50);
 }
@@ -374,28 +360,47 @@ function cancelEdit(){
   else openDetail(currentIndex);
 }
 
+// Proses Simpan dengan validasi ketat
 function saveData(e){
   e.preventDefault();
   const idx=document.getElementById('editIndex').value;
   const obj={}; 
   FIELDS.forEach(f=>obj[f]=document.getElementById('f_'+f).value.trim());
   
+  // Buat salinan data agar aman
+  let newDataArray = JSON.parse(JSON.stringify(data));
+
   if(idx===''){
-    data.push(obj);
-    showToast('✅ Jamaah baru ditambahkan');
-    closeModal();
+    newDataArray.push(obj);
+    // Simpan ke storage dulu, baru update tampilan
+    if (saveDataToStorage(newDataArray)) {
+      data = newDataArray;
+      showToast('✅ Jamaah baru berhasil disimpan');
+      closeModal();
+    }
   } else {
-    data[parseInt(idx)]=obj;
-    showToast('✅ Data berhasil diperbarui');
-    currentIndex = parseInt(idx);
-    openDetail(currentIndex);
+    newDataArray[parseInt(idx)] = obj;
+    if (saveDataToStorage(newDataArray)) {
+      data = newDataArray;
+      showToast('✅ Perubahan berhasil disimpan');
+      currentIndex = parseInt(idx);
+      openDetail(currentIndex);
+    }
   }
-  save(); render();
+  render();
 }
 
 function deleteData(i){
   if(!confirm(`Hapus data "${data[i].nama}" secara permanen?`))return;
-  data.splice(i,1); save(); closeModal(); render(); showToast('🗑️ Data dihapus');
+  let newDataArray = JSON.parse(JSON.stringify(data));
+  newDataArray.splice(i,1); 
+  
+  if (saveDataToStorage(newDataArray)) {
+    data = newDataArray;
+    showToast('🗑️ Data dihapus');
+    closeModal(); 
+    render(); 
+  }
 }
 
 function closeModal(){ 
@@ -405,7 +410,12 @@ function closeModal(){
 
 function resetData(){
   if(!confirm('Reset semua data ke kondisi awal? Perubahan Anda akan hilang.'))return;
-  data=JSON.parse(JSON.stringify(INITIAL_DATA)); save(); render(); showToast('↺ Data direset ke awal');
+  let initialArray = JSON.parse(JSON.stringify(INITIAL_DATA));
+  if (saveDataToStorage(initialArray)) {
+    data = initialArray;
+    render(); 
+    showToast('↺ Data direset ke awal');
+  }
 }
 
 function exportCSV(){
