@@ -30,21 +30,26 @@
   .btn-sm{padding:5px 9px;font-size:12px;border-radius:6px}
   
   .stats{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
-  .stat-card{background:#fff;padding:10px 16px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08);flex:1;min-width:130px}
+  .stat-card{background:#fff;padding:10px 16px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08);flex:1;min-width:100px}
   .stat-card .label{font-size:11px;color:#64748b}
   .stat-card .value{font-size:20px;font-weight:700;color:#0f766e}
   
   .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center;background:#fff;padding:10px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
   .toolbar input,.toolbar select{padding:8px 11px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:#fff;font-family:'Poppins',sans-serif}
-  .toolbar input[type=text]{flex:1;min-width:200px}
+  .toolbar input[type=text]{flex:1;min-width:150px}
   
   .list-wrap{display:flex;flex-direction:column;gap:8px}
   .name-card{background:#fff;padding:14px 18px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08);cursor:pointer;transition:.15s;display:flex;justify-content:space-between;align-items:center;border-left:4px solid #14b8a6}
   .name-card:hover{transform:translateX(4px);box-shadow:0 3px 8px rgba(15,118,110,.15)}
-  .name-card .name{font-size:15px;font-weight:600;color:#0f172a}
+  .name-card .name{font-size:15px;font-weight:600;color:#0f172a;display:flex;align-items:center;gap:8px}
   .name-card .sub{font-size:12px;color:#64748b;margin-top:2px;font-weight:300}
   .name-card .arrow{color:#cbd5e1;font-size:18px}
   .empty{text-align:center;padding:40px;color:#94a3b8;background:#fff;border-radius:12px}
+  
+  /* Badge Status */
+  .badge{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;letter-spacing:.5px}
+  .badge-aktif{background:#dcfce7;color:#166534}
+  .badge-nonaktif{background:#fee2e2;color:#991b1b}
 
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:100;align-items:center;justify-content:center;padding:14px}
   .modal-overlay.active{display:flex}
@@ -63,8 +68,8 @@
   .form-group{display:flex;flex-direction:column;gap:3px}
   .form-group.full{grid-column:1/-1}
   .form-group label{font-size:12px;font-weight:500;color:#475569}
-  .form-group input,.form-group textarea{padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;font-family:'Poppins',sans-serif}
-  .form-group input:focus{outline:2px solid #14b8a6;border-color:transparent}
+  .form-group input,.form-group select{padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;font-family:'Poppins',sans-serif}
+  .form-group input:focus,.form-group select:focus{outline:2px solid #14b8a6;border-color:transparent}
   
   .modal-footer{padding:16px 24px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border-radius:0 0 14px 14px;position:sticky;bottom:0;z-index:1}
   .footer-right{display:flex;gap:8px}
@@ -78,6 +83,8 @@
     .detail-label{margin-top:8px}
     .modal-footer{flex-direction:column-reverse;gap:12px;align-items:stretch}
     .footer-right{justify-content:space-between}
+    .toolbar{flex-direction:column;align-items:stretch}
+    .toolbar input[type=text]{min-width:100%}
   }
 </style>
 </head>
@@ -97,13 +104,18 @@
 
   <div class="stats">
     <div class="stat-card"><div class="label">Total Jamaah</div><div class="value" id="statTotal">0</div></div>
-    <div class="stat-card"><div class="label">Laki-laki</div><div class="value" id="statPria">0</div></div>
-    <div class="stat-card"><div class="label">Perempuan</div><div class="value" id="statWanita">0</div></div>
+    <div class="stat-card"><div class="label">Aktif</div><div class="value" id="statAktif" style="color:#16a34a">0</div></div>
+    <div class="stat-card"><div class="label">Non Aktif</div><div class="value" id="statNonAktif" style="color:#dc2626">0</div></div>
   </div>
 
   <div class="toolbar">
-    <input type="text" id="searchInput" placeholder="🔍 Cari nama, alamat, atau pekerjaan...">
+    <input type="text" id="searchInput" placeholder="🔍 Cari nama...">
     <select id="filterAmalan"><option value="">Semua Amalan Kaji</option></select>
+    <select id="filterStatus">
+      <option value="">Semua Status</option>
+      <option value="Aktif">Hanya Aktif</option>
+      <option value="Non Aktif">Hanya Non Aktif</option>
+    </select>
     <button class="btn btn-warning" onclick="exportCSV()">⬇ Ekspor CSV</button>
     <button class="btn btn-secondary" onclick="resetData()">↺ Reset</button>
   </div>
@@ -128,6 +140,15 @@
         <input type="hidden" id="editIndex">
         <div class="form-grid">
           <div class="form-group"><label>Nama *</label><input type="text" id="f_nama" required></div>
+          
+          <div class="form-group">
+            <label>Status *</label>
+            <select id="f_status" required>
+              <option value="Aktif">Aktif</option>
+              <option value="Non Aktif">Non Aktif</option>
+            </select>
+          </div>
+
           <div class="form-group"><label>Tempat Tgl Lahir</label><input type="text" id="f_ttl"></div>
           <div class="form-group full"><label>Alamat</label><input type="text" id="f_alamat"></div>
           <div class="form-group"><label>No. HP/WA</label><input type="text" id="f_hp"></div>
@@ -159,7 +180,8 @@
 
 <script>
 /* ===== DATA AWAL ===== */
-const INITIAL_DATA=[
+/* Saya tambahkan status:"Aktif" secara default ke semua data awal */
+const BASE_DATA=[
 {nama:"MULIYADIE",ttl:"M. Teweh, 18 Oktober 1975",alamat:"Jl. A. Yani Rt.01, Rw. 04 Beriwit, Puruk Cahu",hp:"0821 5447 1515",telp:"0812 4228 3003",pekerjaan:"wiraswasta",pendidikan:"SMU",pasangan:"Yuni Murti Ningsih",ayah:"Hadri",ibu:"Samsiah",masuk:"20 Juli 2000",suluk:"20 Desember 2023",sulukke:"37 (tiga puluh tujuh)",amalan:"PTJ (Pentawajuh)",sakit:"-",amalansebelum:"-",amalansejak:"-"},
 {nama:"DARMAWAN",ttl:"Banjar Masin, 08 Februari 1984",alamat:"Jl. Pulou Basan Rt.03, Rw. 10 Puruk Cahu",hp:"0852 4952 7798",telp:"081349311377",pekerjaan:"Tukang Las",pendidikan:"SLTP",pasangan:"Tati Marlina",ayah:"Samiun",ibu:"Mardiah",masuk:"10 Oktober 2010",suluk:"28 Februari 2022",sulukke:"04 (empat)",amalan:"D1",sakit:"-",amalansebelum:"-",amalansejak:"-"},
 {nama:"CANDRA",ttl:"Tumpung Laung, 29 Februari 1980",alamat:"Jl. Puruk Batu Bondang, Rt.06 Puruk Cahu",hp:"0853 2002 6565",telp:"085248205085",pekerjaan:"PNS",pendidikan:"Sarjana (S.1)",pasangan:"Solihah",ayah:"Rusdi",ibu:"Misnawati",masuk:"12 April 2004",suluk:"26 September 2018",sulukke:"03 (tiga)",amalan:"D1",sakit:"-",amalansebelum:"-",amalansejak:"-"},
@@ -214,15 +236,17 @@ const INITIAL_DATA=[
 {nama:"SUCI WAHYUNI",ttl:"Puruk Cahu, 07 Mei 1980",alamat:"Jl. Bondang III, Gg. Afiyah II, Puruk Cahu",hp:"0858 2886 1269",telp:"-",pekerjaan:"IRT",pendidikan:"SMK",pasangan:"Doly Supomo",ayah:"Supanto",ibu:"",masuk:"28 September 2024",suluk:"-",sulukke:"-",amalan:"IZ",sakit:"",amalansebelum:"",amalansejak:""}
 ];
 
-// Kunci penyimpanan baru agar tidak bentrok dengan versi lama
-const STORAGE_KEY='mzpc_jamaah_data_v3'; 
+// Tambahkan status "Aktif" secara otomatis ke semua data awal
+const INITIAL_DATA = BASE_DATA.map(d => ({...d, status: "Aktif"}));
+
+// Ganti versi storage ke v4 karena ada tambahan kolom
+const STORAGE_KEY='mzpc_jamaah_data_v4'; 
 let data=[],filteredData=[],currentIndex=-1;
 
-// Fungsi simpan dengan validasi ketat
 function saveDataToStorage(newData){
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
-    return true; // Berhasil
+    return true; 
   } catch (e) {
     console.error("Gagal menyimpan:", e);
     alert("⚠️ GAGAL MENYIMPAN DATA!\n\nPenyimpanan browser Anda mungkin penuh atau sedang dalam mode Incognito (Penyamaran). Silakan ekspor CSV untuk backup.");
@@ -242,11 +266,13 @@ function esc(s){ return s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,
 function render(){
   const q=document.getElementById('searchInput').value.toLowerCase().trim();
   const fA=document.getElementById('filterAmalan').value;
+  const fS=document.getElementById('filterStatus').value;
 
   filteredData=data.filter(d=>{
     const okQ=!q||Object.values(d).some(v=>String(v||'').toLowerCase().includes(q));
     const okA=!fA||d.amalan===fA;
-    return okQ&&okA;
+    const okS=!fS||d.status===fS;
+    return okQ&&okA&&okS;
   });
 
   const container=document.getElementById('listContainer');
@@ -256,9 +282,14 @@ function render(){
     container.innerHTML=filteredData.map(d=>{
       const i=data.indexOf(d);
       const info = [d.pekerjaan, d.alamat].filter(x=>x && x!=='-').join(' • ');
+      const badgeClass = d.status === 'Aktif' ? 'badge-aktif' : 'badge-nonaktif';
+      
       return `<div class="name-card" onclick="openDetail(${i})">
         <div>
-          <div class="name">${esc(d.nama)}</div>
+          <div class="name">
+            ${esc(d.nama)} 
+            <span class="badge ${badgeClass}">${esc(d.status || 'Aktif')}</span>
+          </div>
           <div class="sub">${esc(info) || '-'}</div>
         </div>
         <div class="arrow">›</div>
@@ -267,9 +298,12 @@ function render(){
   }
 
   document.getElementById('statTotal').textContent=data.length;
-  const pria=data.filter(d=>!/^(Hj\.|Ibu|SITI|SUCI|NAJMA|RAHMIDA|RAHMAWATI|ALDHA|YUNI|ERNI|SRI|MIMI|NURHABIBAH)/i.test(d.nama)).length;
-  document.getElementById('statPria').textContent=pria;
-  document.getElementById('statWanita').textContent=data.length-pria;
+  
+  const jmlAktif = data.filter(d => d.status === 'Aktif' || !d.status).length;
+  const jmlNon = data.length - jmlAktif;
+  
+  document.getElementById('statAktif').textContent=jmlAktif;
+  document.getElementById('statNonAktif').textContent=jmlNon;
 
   updateFilters();
 }
@@ -283,6 +317,7 @@ function updateFilters(){
 }
 
 const LABELS = {
+  status: 'Status', // Tambahkan label status
   ttl:'Tempat, Tgl Lahir', alamat:'Alamat', hp:'No. HP/WA', telp:'Telp Keluarga',
   pekerjaan:'Pekerjaan', pendidikan:'Pendidikan', pasangan:'Suami/Istri',
   ayah:'Nama Ayah', ibu:'Nama Ibu', masuk:'Masuk TN', suluk:'Suluk Terakhir',
@@ -302,9 +337,19 @@ function openDetail(idx){
   for(const key in LABELS){
     let val = d[key] || '-';
     let cls = (val==='-' || val==='') ? 'empty-val' : '';
-    if(val==='') val='-';
+    
+    // Jika yang ditampilkan adalah status, beri warna khusus
+    if(key === 'status'){
+      if(val === 'Aktif') val = '<span style="color:#16a34a;font-weight:600">Aktif</span>';
+      else if(val === 'Non Aktif') val = '<span style="color:#dc2626;font-weight:600">Non Aktif</span>';
+      cls = ''; // Hapus class empty jika berisi warna
+    } else {
+      if(val==='') val='-';
+      val = esc(val);
+    }
+    
     html += `<div class="detail-label">${LABELS[key]}</div>
-             <div class="detail-value ${cls}">${esc(val)}</div>`;
+             <div class="detail-value ${cls}">${val}</div>`;
   }
   document.getElementById('detailContent').innerHTML = html;
   
@@ -317,7 +362,7 @@ function openDetail(idx){
   document.getElementById('modalOverlay').classList.add('active');
 }
 
-const FIELDS=['nama','ttl','alamat','hp','telp','pekerjaan','pendidikan','pasangan','ayah','ibu','masuk','suluk','sulukke','amalan','sakit','amalansebelum','amalansejak'];
+const FIELDS=['nama','status','ttl','alamat','hp','telp','pekerjaan','pendidikan','pasangan','ayah','ibu','masuk','suluk','sulukke','amalan','sakit','amalansebelum','amalansejak'];
 
 function switchToEdit(){
   const idx=currentIndex;
@@ -344,7 +389,11 @@ function openForm(){
   document.getElementById('editMode').style.display='block';
   
   document.getElementById('editIndex').value='';
+  
+  // Kosongkan form
   FIELDS.forEach(f=>document.getElementById('f_'+f).value='');
+  // Set default status ke Aktif untuk form baru
+  document.getElementById('f_status').value='Aktif'; 
   
   document.getElementById('deleteWrapper').innerHTML = '';
   document.getElementById('footerButtons').innerHTML = 
@@ -360,19 +409,16 @@ function cancelEdit(){
   else openDetail(currentIndex);
 }
 
-// Proses Simpan dengan validasi ketat
 function saveData(e){
   e.preventDefault();
   const idx=document.getElementById('editIndex').value;
   const obj={}; 
   FIELDS.forEach(f=>obj[f]=document.getElementById('f_'+f).value.trim());
   
-  // Buat salinan data agar aman
   let newDataArray = JSON.parse(JSON.stringify(data));
 
   if(idx===''){
     newDataArray.push(obj);
-    // Simpan ke storage dulu, baru update tampilan
     if (saveDataToStorage(newDataArray)) {
       data = newDataArray;
       showToast('✅ Jamaah baru berhasil disimpan');
@@ -419,8 +465,8 @@ function resetData(){
 }
 
 function exportCSV(){
-  const H=['No.','Nama','Tempat Tgl Lahir','Alamat','No. HP/Wa','No. Telp Keluarga','Pekerjaan','Pendidikan Terakhir','Nama Suami/Istri','Nama Ayah','Nama Ibu','Tgl/bln/thn masuk TN','tgl/bln/thn Suluk Terakhir','Suluk ke','Amalan Kaji','Pernah Menderita Sakit','Amalan Kebathinan Sebelum','Amalan Kebathinan Sejak'];
-  const R=data.map((d,i)=>[i+1,d.nama,d.ttl,d.alamat,d.hp,d.telp,d.pekerjaan,d.pendidikan,d.pasangan,d.ayah,d.ibu,d.masuk,d.suluk,d.sulukke,d.amalan,d.sakit,d.amalansebelum,d.amalansejak]);
+  const H=['No.','Nama','Status','Tempat Tgl Lahir','Alamat','No. HP/Wa','No. Telp Keluarga','Pekerjaan','Pendidikan Terakhir','Nama Suami/Istri','Nama Ayah','Nama Ibu','Tgl/bln/thn masuk TN','tgl/bln/thn Suluk Terakhir','Suluk ke','Amalan Kaji','Pernah Menderita Sakit','Amalan Kebathinan Sebelum','Amalan Kebathinan Sejak'];
+  const R=data.map((d,i)=>[i+1,d.nama,d.status,d.ttl,d.alamat,d.hp,d.telp,d.pekerjaan,d.pendidikan,d.pasangan,d.ayah,d.ibu,d.masuk,d.suluk,d.sulukke,d.amalan,d.sakit,d.amalansebelum,d.amalansejak]);
   const csv=[H,...R].map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
@@ -436,6 +482,7 @@ function showToast(m){
 
 document.getElementById('searchInput').addEventListener('input',render);
 document.getElementById('filterAmalan').addEventListener('change',render);
+document.getElementById('filterStatus').addEventListener('change',render);
 document.getElementById('modalOverlay').addEventListener('click',e=>{ if(e.target.id==='modalOverlay')closeModal(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeModal(); });
 
