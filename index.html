@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Data Jamaah MZPC</title>
+<!-- Tambahan agar tidak ada error favicon -->
+<link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -118,8 +120,9 @@
     <button class="btn btn-warning" onclick="exportCSV()">⬇ Ekspor CSV</button>
   </div>
 
+  <!-- TAMPILAN AWAL / LOADING -->
   <div class="list-wrap" id="listContainer">
-    <div class="empty" id="loadingText">Memuat data dari server...</div>
+    <div class="empty">Memuat data...</div>
   </div>
 </div>
 
@@ -187,8 +190,21 @@ const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
 
 let data=[],filteredData=[],currentIndex=-1;
 
-/* ===== FUNGSI LOAD DATA DARI SERVER ===== */
+/* ===== FUNGSI LOAD DATA DARI SERVER (DENGAN CACHE) ===== */
 async function loadDataFromServer() {
+  // 1. Tampilkan data dari cache lokal (jika ada) agar layar langsung terisi
+  const cache = localStorage.getItem('mzpc_cache');
+  if (cache) {
+    try {
+      data = JSON.parse(cache);
+      render();
+    } catch(e) {}
+  } else {
+    // Jika belum ada cache sama sekali, tampilkan teks loading
+    document.getElementById('listContainer').innerHTML = '<div class="empty">Memuat data dari server (mohon tunggu)...</div>';
+  }
+
+  // 2. Ambil data terbaru dari server di latar belakang
   try {
     const response = await fetch(`${JSONBIN_URL}/latest`, {
       method: 'GET',
@@ -200,19 +216,29 @@ async function loadDataFromServer() {
     if (!response.ok) throw new Error('Gagal mengambil data');
     
     const result = await response.json();
-    // Karena di JSONBin kita simpan sebagai {"jamaah": [...]}, kita ambil array-nya
-    // Jika masih kosong, fallback ke array kosong
-    data = (result.record && result.record.jamaah) ? result.record.jamaah : [];
+    let dataDariServer = [];
     
-    if (data.length === 0) {
-      // Jika database kosong, kita bisa isi dengan data awal (opsional)
-      // Untuk sementara kita biarkan kosong agar Anda bisa input dari awal.
+    if (result.record) {
+       if (Array.isArray(result.record)) {
+           dataDariServer = result.record;
+       } else if (result.record.jamaah && Array.isArray(result.record.jamaah)) {
+           dataDariServer = result.record.jamaah;
+       }
     }
     
+    data = dataDariServer;
+    
+    // Simpan data terbaru ke cache lokal
+    localStorage.setItem('mzpc_cache', JSON.stringify(data));
+    
     render();
+    
   } catch (error) {
     console.error("Error:", error);
-    document.getElementById('listContainer').innerHTML = '<div class="empty" style="color:#dc2626">Gagal memuat data. Periksa koneksi internet atau API Key Anda.</div>';
+    // Jika gagal mengambil data dari server, tapi kita punya cache, biarkan layar menampilkan cache.
+    if (!cache) {
+       document.getElementById('listContainer').innerHTML = '<div class="empty" style="color:#dc2626">Gagal memuat data. Periksa koneksi internet atau API Key Anda.</div>';
+    }
   }
 }
 
@@ -467,54 +493,8 @@ document.getElementById('filterStatus').addEventListener('change',render);
 document.getElementById('modalOverlay').addEventListener('click',e=>{ if(e.target.id==='modalOverlay')closeModal(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeModal(); });
 
-/* ===== FUNGSI LOAD DATA DARI SERVER (DENGAN CACHE) ===== */
-async function loadDataFromServer() {
-  // 1. Tampilkan data dari cache lokal (jika ada) agar layar langsung terisi
-  const cache = localStorage.getItem('mzpc_cache');
-  if (cache) {
-    try {
-      data = JSON.parse(cache);
-      render();
-    } catch(e) {}
-  } else {
-    // Jika belum ada cache sama sekali, tampilkan teks loading
-    document.getElementById('listContainer').innerHTML = '<div class="empty">Memuat data dari server (mohon tunggu)...</div>';
-  }
-
-  // 2. Ambil data terbaru dari server di latar belakang
-  try {
-    const response = await fetch(`${JSONBIN_URL}/latest`, {
-      method: 'GET',
-      headers: {
-        'X-Master-Key': JSONBIN_API_KEY
-      }
-    });
-    
-    if (!response.ok) throw new Error('Gagal mengambil data');
-    
-    const result = await response.json();
-    let dataDariServer = [];
-    
-    if (result.record) {
-       if (Array.isArray(result.record)) {
-           dataDariServer = result.record;
-       } else if (result.record.jamaah && Array.isArray(result.record.jamaah)) {
-           dataDariServer = result.record.jamaah;
-       }
-    }
-    
-    data = dataDariServer;
-    
-    // Simpan data terbaru ke cache lokal
-    localStorage.setItem('mzpc_cache', JSON.stringify(data));
-    
-    render();
-    
-  } catch (error) {
-    console.error("Error:", error);
-    // Jika gagal mengambil data dari server, tapi kita punya cache, biarkan layar menampilkan cache.
-    if (!cache) {
-       document.getElementById('listContainer').innerHTML = '<div class="empty" style="color:#dc2626">Gagal memuat data. Periksa koneksi internet atau API Key Anda.</div>';
-    }
-  }
-}
+// Jalankan saat halaman dimuat
+loadDataFromServer();
+</script>
+</body>
+</html>
