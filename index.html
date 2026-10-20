@@ -463,8 +463,42 @@ document.getElementById('filterStatus').addEventListener('change',render);
 document.getElementById('modalOverlay').addEventListener('click',e=>{ if(e.target.id==='modalOverlay')closeModal(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeModal(); });
 
-// Jalankan saat halaman dimuat
-loadDataFromServer();
-</script>
-</body>
-</html>
+/* ===== FUNGSI LOAD DATA DARI SERVER ===== */
+async function loadDataFromServer() {
+  try {
+    const response = await fetch(`${JSONBIN_URL}/latest`, {
+      method: 'GET',
+      headers: {
+        'X-Master-Key': JSONBIN_API_KEY
+      }
+    });
+    
+    if (!response.ok) throw new Error('Gagal mengambil data');
+    
+    const result = await response.json();
+    let dataDariServer = [];
+    
+    // Membaca format data dari JSONBin
+    if (result.record) {
+       if (Array.isArray(result.record)) {
+           dataDariServer = result.record;
+       } else if (result.record.jamaah && Array.isArray(result.record.jamaah)) {
+           dataDariServer = result.record.jamaah;
+       }
+    }
+    
+    // JIKA DATABASE MASIH KOSONG, OTOMATIS ISI DENGAN DATA AWAL
+    if (dataDariServer.length === 0) {
+       dataDariServer = INITIAL_DATA; 
+       // Simpan data awal ini ke JSONBin agar sinkron
+       await saveDataToServer(dataDariServer);
+    }
+
+    data = dataDariServer;
+    render();
+    
+  } catch (error) {
+    console.error("Error:", error);
+    document.getElementById('listContainer').innerHTML = '<div class="empty" style="color:#dc2626">Gagal memuat data. Periksa koneksi internet atau API Key Anda.</div>';
+  }
+}
