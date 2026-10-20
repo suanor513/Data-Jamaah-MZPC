@@ -46,7 +46,6 @@
   .name-card .arrow{color:#cbd5e1;font-size:18px}
   .empty{text-align:center;padding:40px;color:#94a3b8;background:#fff;border-radius:12px}
   
-  /* Badge Status */
   .badge{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;letter-spacing:.5px}
   .badge-aktif{background:#dcfce7;color:#166534}
   .badge-nonaktif{background:#fee2e2;color:#991b1b}
@@ -92,7 +91,7 @@
 <div class="container">
   <header>
     <div class="header-left">
-      <!-- PASTIKAN LINK LOGO ANDA MASIH ADA DI SINI -->
+      <!-- LOGO ANDA -->
       <img src="https://raw.githubusercontent.com/suanor513/Data-Jamaah-MZPC/main/MZPC%20ssuai%20kode.png" alt="Logo MZPC" class="logo-img" onerror="this.style.display='none'">
       <div>
         <h1>📖 Data Jamaah MZPC</h1>
@@ -117,10 +116,11 @@
       <option value="Non Aktif">Hanya Non Aktif</option>
     </select>
     <button class="btn btn-warning" onclick="exportCSV()">⬇ Ekspor CSV</button>
-    <button class="btn btn-secondary" onclick="resetData()">↺ Reset</button>
   </div>
 
-  <div class="list-wrap" id="listContainer"></div>
+  <div class="list-wrap" id="listContainer">
+    <div class="empty" id="loadingText">Memuat data dari server...</div>
+  </div>
 </div>
 
 <!-- Modal Detail & Edit -->
@@ -179,91 +179,73 @@
 <div class="toast" id="toast"></div>
 
 <script>
-/* ===== DATA AWAL ===== */
-/* Saya tambahkan status:"Aktif" secara default ke semua data awal */
-const BASE_DATA=[
-{nama:"MULIYADIE",ttl:"M. Teweh, 18 Oktober 1975",alamat:"Jl. A. Yani Rt.01, Rw. 04 Beriwit, Puruk Cahu",hp:"0821 5447 1515",telp:"0812 4228 3003",pekerjaan:"wiraswasta",pendidikan:"SMU",pasangan:"Yuni Murti Ningsih",ayah:"Hadri",ibu:"Samsiah",masuk:"20 Juli 2000",suluk:"20 Desember 2023",sulukke:"37 (tiga puluh tujuh)",amalan:"PTJ (Pentawajuh)",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"DARMAWAN",ttl:"Banjar Masin, 08 Februari 1984",alamat:"Jl. Pulou Basan Rt.03, Rw. 10 Puruk Cahu",hp:"0852 4952 7798",telp:"081349311377",pekerjaan:"Tukang Las",pendidikan:"SLTP",pasangan:"Tati Marlina",ayah:"Samiun",ibu:"Mardiah",masuk:"10 Oktober 2010",suluk:"28 Februari 2022",sulukke:"04 (empat)",amalan:"D1",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"CANDRA",ttl:"Tumpung Laung, 29 Februari 1980",alamat:"Jl. Puruk Batu Bondang, Rt.06 Puruk Cahu",hp:"0853 2002 6565",telp:"085248205085",pekerjaan:"PNS",pendidikan:"Sarjana (S.1)",pasangan:"Solihah",ayah:"Rusdi",ibu:"Misnawati",masuk:"12 April 2004",suluk:"26 September 2018",sulukke:"03 (tiga)",amalan:"D1",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"SUANOR",ttl:"Tumpung Laung, 15 Mei 1989",alamat:"Jl. Puruk Batu Bondang No.180 B Rt.06 Puruk cahu",hp:"0852 4629 2966",telp:"0823 6307 0307",pekerjaan:"PNS",pendidikan:"Sarjana (S.1)",pasangan:"Maulisa Muslimah",ayah:"Rusdi",ibu:"Misnawati",masuk:"28 Juni 2008",suluk:"10 Juli 2022",sulukke:"04 (empat)",amalan:"D1",sakit:"Tifus",amalansebelum:"-",amalansejak:"-"},
-{nama:"IKHWAN NOSAUFI",ttl:"Puruk Cahu, 20 Desember 1981",alamat:"Jl. A. Yani No.03 Puruk Cahu",hp:"0821 5802 0020",telp:"0822 5544 7776",pekerjaan:"swasta",pendidikan:"SLTA",pasangan:"Rismarina Wati",ayah:"Patrasi (alm)",ibu:"Siti Wariah (alm)",masuk:"19 Agustus 2016",suluk:"26 September 2018",sulukke:"03 (tiga)",amalan:"D1",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"SYAHRIADI",ttl:"Puruk Cahu, 28 Februari 1989",alamat:"Jl. A. Yani Puruk Cahu",hp:"0821 3333 8202",telp:"0822 4832 6994",pekerjaan:"Swasta",pendidikan:"Tidak tamat SD",pasangan:"-",ayah:"Rusdianor",ibu:"Misrah",masuk:"19 Agustus 2016",suluk:"26 Oktober 2019",sulukke:"03 (tiga)",amalan:"D1",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"ANANG MISRA",ttl:"Juking Pajang, 02 Februari 1962",alamat:"Jl. Puruk Batu Bondang Komp. Perum DPR Puruk Cahu",hp:"0857 5116 6922",telp:"",pekerjaan:"Swasta",pendidikan:"SD",pasangan:"Sumiarti",ayah:"Mursalin",ibu:"Basnah",masuk:"05 Desember 2016",suluk:"24 April 2018",sulukke:"02 (dua)",amalan:"MI",sakit:"Hernia, Sakit Pinggang",amalansebelum:"-",amalansejak:"-"},
-{nama:"TABRANI",ttl:"Amuntai, 18 Juli 1962",alamat:"Jl. a. Yani Rt.10, Rw.03 Puruk Cahu",hp:"",telp:"0812 5642 8344",pekerjaan:"Swasta",pendidikan:"SMP",pasangan:"Sri Endang",ayah:"Jamhari",ibu:"Turiah",masuk:"1998",suluk:"26 September 2018",sulukke:"03 (tiga)",amalan:"D1",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"RAHMIADI",ttl:"Muara Tuhup, 13 Desember 1988",alamat:"Jl. Bina Warga Muara Tuhup",hp:"0823 5338 9327",telp:"0823 5873 4796",pekerjaan:"Swasta",pendidikan:"SLTP",pasangan:"Fitriati",ayah:"Misrudin",ibu:"Bunga Masnia",masuk:"16 Februari 2013",suluk:"20 Desember 2023",sulukke:"03 (tiga)",amalan:"D1",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"BELLY",ttl:"Muara Tuhup, 02 Mei 1987",alamat:"Jl. Pelajar Rt.05, Rw.02 Muara Tuhup",hp:"0822 5503 0967",telp:"0822 5223 1521",pekerjaan:"Karyawan Swasta",pendidikan:"SMP",pasangan:"Rahmida",ayah:"Turik",ibu:"Misliannor",masuk:"16 Februari 2013",suluk:"20 Desember 2023",sulukke:"03 (tiga)",amalan:"D1",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"YUNI MURTININGSIH, SE",ttl:"Puruk Cahu, 10 Desember 1978",alamat:"Jl. A. Yani Rt.01, Rw.04 Beriwit, Puruk Cahu",hp:"0821 3003 9119",telp:"0821 5447 1515",pekerjaan:"PNS",pendidikan:"Sarjana (S.1)",pasangan:"Muliyadie",ayah:"Kuwat Harjono (alm)",ibu:"Norhemat (alm)",masuk:"05 Desember 2016",suluk:"26 Oktober 2019",sulukke:"01 (satu)",amalan:"NI",sakit:"Asma",amalansebelum:"-",amalansejak:"-"},
-{nama:"EDI RAHMADI",ttl:"Puruk Cahu, 02 Januari 1982",alamat:"Jl. Pelajar No.78 Rt.04, Rw. 02 Puruk Cahu",hp:"0852 4999 7277",telp:"0815 2286 5122",pekerjaan:"Wiraswasta",pendidikan:"SMA",pasangan:"Mira Erianti",ayah:"Suhaimi",ibu:"Hj. Siti Rusilah",masuk:"11 Januari 2020",suluk:"15 November 2022",sulukke:"02 (dua)",amalan:"MI",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"MUHAMMAD FILZA",ttl:"Puruk Cahu, 07 Januari 1997",alamat:"Jl. A. Yani Rt.02, Rw. 03",hp:"0853 4686 8737",telp:"0853 3253 1288",pekerjaan:"Honorer",pendidikan:"SMA",pasangan:"-",ayah:"Syarifudin (alm)",ibu:"Siti Aryani",masuk:"17 November 2019",suluk:"19 Desember 2021",sulukke:"01 (satu)",amalan:"NI",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"Hj. ERNI ROSITA",ttl:"Puruk Cahu, 18 November 1979",alamat:"Jl. A. Yani No.76 Rt. 01, Rw.03 Puruk Cahu",hp:"0813 4636 0601",telp:"0813 5102 6300",pekerjaan:"Ibu Rumah Tangga",pendidikan:"SPK/SMU sederajat",pasangan:"H. Rachmad Kartolo",ayah:"H. Ilmudin (alm)",ibu:"Hj. Kartini",masuk:"17 November 2019",suluk:"-",sulukke:"01 (satu)",amalan:"NI",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"SRI ENDANG",ttl:"Puruk Cahu, 14 Agustus 1976",alamat:"Jl. A. Yani Rt.10 Puruk Cahu",hp:"0812 5642 8344",telp:"085828857593",pekerjaan:"Ibu Rumah Tangga",pendidikan:"Aliyah (SLTA)",pasangan:"Tabrani",ayah:"Hormansyah",ibu:"Hj. Norani",masuk:"13 Oktober 2018",suluk:"-",sulukke:"01 (satu)",amalan:"NI",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"AMILIN SURADI",ttl:"Lampeong, 15 Mei 1978",alamat:"Jl. Tumenggung Tiong No. 15 Puruk Cahu",hp:"0852 4754 8999",telp:"0821 5455 8889",pekerjaan:"Wiraswasta",pendidikan:"SMK",pasangan:"Rahmawati",ayah:"Arnan (alm)",ibu:"Aliyah (alm)",masuk:"19 Mei 2016",suluk:"24 April 2018",sulukke:"02 (dua)",amalan:"MI",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"RAHMAWATI",ttl:"Puruk Cahu, 14 Februari 1987",alamat:"Jl. Tumenggung Tiong No.15 Puruk Cahu",hp:"0813 4623 1398",telp:"0852 4754 8999",pekerjaan:"Ibu Rumah Tangga",pendidikan:"SD",pasangan:"Amilin Suradi",ayah:"Badri A.U",ibu:"Mindah",masuk:"09 November 2017",suluk:"23 Februari 2020",sulukke:"03 (tiga)",amalan:"MI",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"ADE RIVANI PERNIAWAN",ttl:"Puruk Cahu, 09 Mei 1997",alamat:"Jl. Kolonel Untung Soerapati Puruk Cahu",hp:"0813 4653 0314",telp:"",pekerjaan:"Swasta",pendidikan:"SMA",pasangan:"-",ayah:"Hanipudin",ibu:"Siti Aminah",masuk:"19 Agustus 2016",suluk:"26 Oktober 2019",sulukke:"05 (lima)",amalan:"D1",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"RUDI HARTAWAN",ttl:"Puruk Cahu, 14 Desember 1989",alamat:"Jl. Kolonel Untung Soerapati Puruk Cahu",hp:"0852 4606 9163",telp:"0858 2035 5516",pekerjaan:"Wiraswasta",pendidikan:"SMA",pasangan:"Sri Sulastri",ayah:"Misratnudin",ibu:"Trisilawati (alm)",masuk:"19 Mei 2016",suluk:"26 September 2018",sulukke:"02 (dua)",amalan:"MI",sakit:"Tifus",amalansebelum:"-",amalansejak:"-"},
-{nama:"RAHMIDA",ttl:"Muara Tuhup, 06 Juni 1990",alamat:"Jl. Pelajar Rt.05 Muara Tuhup, Puruk Cahu",hp:"0853 4956 2901",telp:"0822 5503 0967",pekerjaan:"Ibu Rumah Tangga",pendidikan:"SMA",pasangan:"Belly",ayah:"Aliansyah",ibu:"Asmayani",masuk:"22 Oktober 2013",suluk:"-",sulukke:"01 (satu)",amalan:"NI",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"ARIS WAHYUDI",ttl:"Banjarmasin,",alamat:"Jl. Tumenggung Silam, Puruk Cahu",hp:"0821 4983 3241",telp:"0822 5235 5556",pekerjaan:"Honorer",pendidikan:"SMA",pasangan:"Aldha Pratiwi",ayah:"Mulyadin (alm)",ibu:"Arianty (alm)",masuk:"Maret 2020",suluk:"-",sulukke:"-",amalan:"IZ",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"ALDHA PRATIWI",ttl:"Puruk Cahu, 12 Maret 2000",alamat:"Jl. Tumenggung Silam, Puruk Cahu",hp:"0822 5235 5556",telp:"0821 4983 3241",pekerjaan:"Ibu Rumah Tangga",pendidikan:"SMP",pasangan:"Aris Wahyudi",ayah:"Hanipudin",ibu:"Siti Aminah",masuk:"10 Januari 2020",suluk:"-",sulukke:"-",amalan:"IZ",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"SUPRIADI",ttl:"Puruk Cahu, 21 Oktober 1989",alamat:"Jl. Untung Surapati, Puruk Cahu",hp:"0813 5265 7874",telp:"0813 7680 5348",pekerjaan:"Swasta",pendidikan:"SMP",pasangan:"Yuni Yanti Wahyana",ayah:"Budimansyah",ibu:"Masryah Buhali Iju",masuk:"05 Desember 2016",suluk:"26 Oktober 2019",sulukke:"03 (tiga)",amalan:"D1",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"RAFIK",ttl:"Puruk Cahu, 06 Juni 1987",alamat:"Jl. Jendral Sudirman, Puruk Cahu",hp:"0853 4844 4176",telp:"081257132996",pekerjaan:"PNS",pendidikan:"SMK",pasangan:"Erni Farida",ayah:"Arifin",ibu:"Kusnah",masuk:"05 Desember 2016",suluk:"-",sulukke:"-",amalan:"IZ",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"Alm. NORHIDAYAT",ttl:"Puruk Cahu, 20 Mei 1997",alamat:"Jl Merpati Putih, Rt.02, Rw.03 Puruk Cahu",hp:"0812 5376 9275",telp:"",pekerjaan:"Swasta",pendidikan:"SMP",pasangan:"-",ayah:"Samsul Bahri",ibu:"Budi Satiana",masuk:"24 April 2017",suluk:"26 September 2018",sulukke:"02 (dua)",amalan:"MI",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"SAHMUJI",ttl:"Puruk Cahu, 15 Oktober 1987",alamat:"Jl. Kolonel Untung Surapati Rt.03, Rw.04 Puruk Cahu",hp:"0821 5440 4043",telp:"0823 5250 5384",pekerjaan:"PNS",pendidikan:"SLTA",pasangan:"Jawi",ayah:"Idrus Sani",ibu:"Rukna",masuk:"05 Desember 2016",suluk:"",sulukke:"01 (satu)",amalan:"NI",sakit:"-",amalansebelum:"-",amalansejak:"-"},
-{nama:"VICTOR GUNAWAN. TB",ttl:"Puruk Cahu, 10 Juli 1986",alamat:"Jl. A. Yani, Puruk Cahu",hp:"0852 4934 9626",telp:"",pekerjaan:"Swasta",pendidikan:"SMA Sederajat",pasangan:"-",ayah:"Abdul Rahman. TB (alm)",ibu:"Musdiana",masuk:"17 November 2019",suluk:"19 Desember 2021",sulukke:"01 (satu)",amalan:"NI",sakit:"-",amalansebelum:"Ilmu Suka Merah",amalansejak:""},
-{nama:"DICKY RINALDY. P",ttl:"Puruk Cahu, 03 Oktober 1996",alamat:"Jl. Bukit Tinggi",hp:"085389306930",telp:"",pekerjaan:"Honorer",pendidikan:"SMA",pasangan:"",ayah:"Agus Prayitno",ibu:"",masuk:"21 Agustus 2022",suluk:"",sulukke:"",amalan:"IZ",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"IBRAHIM JASDI",ttl:"Buntok, 02 Desember 1986",alamat:"Jl. Untung Surapati RT.07 RW.03",hp:"081250947394",telp:"",pekerjaan:"PNS",pendidikan:"Sarjana (S.1)",pasangan:"Helmiah",ayah:"Firdaus Alamsyah",ibu:"",masuk:"21 Agustus 2022",suluk:"",sulukke:"",amalan:"IZ",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"RAHIMUDIN",ttl:"Muara Babuat, 03 September 1988",alamat:"Jl. Pulou Basan Komp. Perum Asri Blok B",hp:"081257764044",telp:"",pekerjaan:"Swasta",pendidikan:"Sarjana (S.1)",pasangan:"Iin Puspita",ayah:"Ainul Yakin",ibu:"Nor Hayati",masuk:"21 Agustus 2022",suluk:"",sulukke:"",amalan:"IZ",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"RYAN SETIAWAN",ttl:"Puruk Cahu, 23 November 1991",alamat:"Jl. A. Yani",hp:"081250137582",telp:"085821727328",pekerjaan:"Swasta",pendidikan:"SMP",pasangan:"",ayah:"Zainudin",ibu:"Fatmawati",masuk:"21 Agustus 2022",suluk:"",sulukke:"",amalan:"IZ",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"AHMAD NURYADI",ttl:"Batu Tuhup, 16 Januari 1978",alamat:"Jl. Bondang III Puruk Cahu",hp:"081255052406",telp:"081257358938",pekerjaan:"Swasata",pendidikan:"SLTA",pasangan:"NOORHAYATI",ayah:"(Alm) TUHALUS",ibu:"JAMBUN",masuk:"2009",suluk:"",sulukke:"",amalan:"IZ",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"MISRUDIN",ttl:"Muara Tuhup, 01 Juli 1966",alamat:"Jl. Bina Warga Muara Tuhup",hp:"082353389327",telp:"082353389327",pekerjaan:"Swasta",pendidikan:"",pasangan:"Bunga Masnia",ayah:"(Alm) Masturi",ibu:"Iwang",masuk:"16 Februari 2013",suluk:"26 Oktober 2019",sulukke:"02 (dua)",amalan:"MI",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"USNAN",ttl:"Bintang Ninggi, 01 Juni 1955",alamat:"Jl. K.H Dewantara Tumpung Lauang",hp:"082250427997",telp:"082130038080",pekerjaan:"Tidak Bekerja",pendidikan:"Tidak Tamat SD",pasangan:"",ayah:"(Alm) Basri",ibu:"(Alm) Nursehat",masuk:"17 November 2018",suluk:"26 September 2018",sulukke:"03 (tiga)",amalan:"D1",sakit:"Tuna Netra",amalansebelum:"",amalansejak:""},
-{nama:"MIMI YHADIE",ttl:"Muara Tuhup, 03 Juli 1979",alamat:"Jl. Pulou Basan RT.10, RW.03 Puruk Cahu",hp:"081349311377",telp:"085251040787",pekerjaan:"Tukang Las",pendidikan:"SLTA/Sederajat",pasangan:"Ili Fitriah",ayah:"(Alm) Hasrin",ibu:"(Alm) Rafiah",masuk:"2000",suluk:"November 2017",sulukke:"04 (empat)",amalan:"D1",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"TRI YADI",ttl:"Batu Tuhup, 11 November 1991",alamat:"Desa Batu Tuhup",hp:"081255518445",telp:"081256941576",pekerjaan:"Karyawan Swasta",pendidikan:"SMP",pasangan:"Nor Aidah",ayah:"Mawardi",ibu:"",masuk:"21 Agustus 2022",suluk:"14 November 2024",sulukke:"02 (dua)",amalan:"MI",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"HANIPUDIN",ttl:"Muara Teweh, 14 November 1964",alamat:"Jl. Liang Pandan Puruk Cahu",hp:"",telp:"0822 5501 1769",pekerjaan:"Swasta",pendidikan:"SMA",pasangan:"",ayah:"(Alm) A. Zarkisnan. B",ibu:"",masuk:"14 Oktober 2018",suluk:"26 Oktober 2019",sulukke:"01 (satu)",amalan:"NI",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"NURHABIBAH",ttl:"Surabaya, 18 Mei 2000",alamat:"Jl. A. Yani Puruk Cahu",hp:"",telp:"",pekerjaan:"Ibu Rumah Tangga",pendidikan:"SMP",pasangan:"H. Rachmad Kartolo",ayah:"",ibu:"",masuk:"21 Agustus 2022",suluk:"",sulukke:"",amalan:"IZ",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"ARIS ANUGRAH",ttl:"Sikui, 26 Oktober 1998",alamat:"Bintang Ninggi II Rt.05 Barito Utara",hp:"082211372979",telp:"082154471515",pekerjaan:"Karyawan Swasta",pendidikan:"SMA",pasangan:"",ayah:"Muliyadie",ibu:"Salasiah",masuk:"13 Oktober 2018",suluk:"",sulukke:"",amalan:"IZ",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"RADI",ttl:"Benao Hilir, 31 Maret 1991",alamat:"Juking Pajang - Puruk Cahu",hp:"085292907696",telp:"081256124003/085821703864",pekerjaan:"Karyawan Swasta",pendidikan:"SMP",pasangan:"Wira Mustika",ayah:"Supian",ibu:"Siti Nor Silah",masuk:"09 Maret 2023",suluk:"14 November 2024",sulukke:"02 (dua)",amalan:"MI",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"MUHAMMAD ALKINDI",ttl:"Muara Tuhup, 12 Januari 1997",alamat:"Jl. Isran AS, Muara Tuhup",hp:"082251371719",telp:"085245263998",pekerjaan:"Karyawan Swasta",pendidikan:"SMA",pasangan:"Eva Raudatul Jannah",ayah:"Ardiansyah",ibu:"Kartini",masuk:"09 Maret 2023",suluk:"",sulukke:"",amalan:"IZ",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"ERMAS ZAINI",ttl:"Muara Untu, 31 Juli 1991",alamat:"Jl. Merdeka RT.05, RW.01 Puruk Cahu",hp:"081255823418",telp:"081349434222",pekerjaan:"Swasta",pendidikan:"SMA",pasangan:"Sari Damayanti",ayah:"Abdul Wahab",ibu:"Patmawati",masuk:"19 Mei 2016",suluk:"04 April 2023",sulukke:"4",amalan:"D1",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"NAJMA AULIA",ttl:"Puruk Cahu, 13 November 2006",alamat:"Jl. Tumenggung Tiong No.23",hp:"081351526819",telp:"082154558889",pekerjaan:"Pelajar",pendidikan:"Madrasah Aliyah",pasangan:"-",ayah:"Amilin Suradi",ibu:"Rahmawati",masuk:"04 Juli 2024",suluk:"-",sulukke:"-",amalan:"IZ",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"ARIF SANJAYA",ttl:"Puruk Cahu, 04 Juni 1999",alamat:"Jl. A. Yani, Puruk Cahu",hp:"082269478319",telp:"081255137834",pekerjaan:"Karyawan Swasta",pendidikan:"SMA/Sederajat",pasangan:"-",ayah:"Tabrani",ibu:"",masuk:"04 Juli 2024",suluk:"-",sulukke:"-",amalan:"IZ",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"FIKRI",ttl:"Puruk Cahu, 20 Oktober 2005",alamat:"Jl. A. Yani, Puruk Cahu",hp:"082154125895",telp:"085828857593",pekerjaan:"Pelajar",pendidikan:"Masih Sekolah",pasangan:"-",ayah:"Tabrani",ibu:"",masuk:"04 Juli 2024",suluk:"-",sulukke:"-",amalan:"IZ",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"ARIS NORWANTO",ttl:"Muara Teweh, 20 Maret 1973",alamat:"Jl. A. Yani, Puruk Cahu",hp:"0822 5210 6179",telp:"082154471515",pekerjaan:"Honorer",pendidikan:"SMA/Sederajat",pasangan:"Indrawati",ayah:"Kuat Harjono",ibu:"",masuk:"04 Juli 2024",suluk:"-",sulukke:"-",amalan:"IZ",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"ARYA FAITHA RAHIM",ttl:"Puruk Cahu, 28 Desember 2006",alamat:"Jl. Merdeka Rt.1, Puruk Cahu",hp:"081255271063",telp:"081346360601",pekerjaan:"Pelajar",pendidikan:"Masih Sekolah",pasangan:"-",ayah:"Gafur Rahim",ibu:"",masuk:"04 Juli 2024",suluk:"-",sulukke:"-",amalan:"IZ",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"PEBYANNOR",ttl:"Muara Tupuh, 10 Oktober 1987",alamat:"Jl. Tumenggung surapati, Gg. K. Cina No.106A Muara Teweh",hp:"082211516705",telp:"081255518445",pekerjaan:"Swasta",pendidikan:"SD",pasangan:"Siti Rahmah",ayah:"Maslian",ibu:"",masuk:"04 Juli 2024",suluk:"-",sulukke:"-",amalan:"IZ",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"RANDI",ttl:"Benao, 14 Februari 2000",alamat:"Muara Laung I, Puruk Cahu",hp:"082253310096",telp:"085292907696",pekerjaan:"Swasta",pendidikan:"SD",pasangan:"-",ayah:"Supian",ibu:"Siti Norsilah",masuk:"04 Juli 2024",suluk:"-",sulukke:"-",amalan:"IZ",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"SITI NORSILAH",ttl:"Muara Laung I, 1972",alamat:"Muara Laung I, Puruk Cahu",hp:"085821703864",telp:"085292907696",pekerjaan:"IRT",pendidikan:"SMP",pasangan:"Supian",ayah:"Misran",ibu:"",masuk:"04 Juli 2024",suluk:"-",sulukke:"-",amalan:"IZ",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"SUPIAN",ttl:"Benao, 1965",alamat:"Muara Laung I, Puruk Cahu",hp:"085821703864",telp:"085292907696",pekerjaan:"Petani",pendidikan:"SD",pasangan:"Siti Norsilah",ayah:"Ijur",ibu:"",masuk:"04 Juli 2024",suluk:"-",sulukke:"-",amalan:"IZ",sakit:"",amalansebelum:"",amalansejak:""},
-{nama:"SUCI WAHYUNI",ttl:"Puruk Cahu, 07 Mei 1980",alamat:"Jl. Bondang III, Gg. Afiyah II, Puruk Cahu",hp:"0858 2886 1269",telp:"-",pekerjaan:"IRT",pendidikan:"SMK",pasangan:"Doly Supomo",ayah:"Supanto",ibu:"",masuk:"28 September 2024",suluk:"-",sulukke:"-",amalan:"IZ",sakit:"",amalansebelum:"",amalansejak:""}
-];
+/* ===== KONFIGURASI JSONBIN ===== */
+const JSONBIN_BIN_ID = '6ad76bfaac6210605a42509e';
+// PASTE MASTER KEY ANDA DI BAWAH INI (GANTI TEKS DI DALAM KUTIP)
+const JSONBIN_API_KEY = '$2a$10$Mpqt49q5pQBIfDnCU2cVJ.BI1Dq2tLJFc2cWqDImU8y9jLamRVfhC'; 
+const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
 
-// Tambahkan status "Aktif" secara otomatis ke semua data awal
-const INITIAL_DATA = BASE_DATA.map(d => ({...d, status: "Aktif"}));
-
-// Ganti versi storage ke v4 karena ada tambahan kolom
-const STORAGE_KEY='mzpc_jamaah_data_v4'; 
 let data=[],filteredData=[],currentIndex=-1;
 
-function saveDataToStorage(newData){
+/* ===== FUNGSI LOAD DATA DARI SERVER ===== */
+async function loadDataFromServer() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
-    return true; 
-  } catch (e) {
-    console.error("Gagal menyimpan:", e);
-    alert("⚠️ GAGAL MENYIMPAN DATA!\n\nPenyimpanan browser Anda mungkin penuh atau sedang dalam mode Incognito (Penyamaran). Silakan ekspor CSV untuk backup.");
+    const response = await fetch(`${JSONBIN_URL}/latest`, {
+      method: 'GET',
+      headers: {
+        'X-Master-Key': JSONBIN_API_KEY
+      }
+    });
+    
+    if (!response.ok) throw new Error('Gagal mengambil data');
+    
+    const result = await response.json();
+    // Karena di JSONBin kita simpan sebagai {"jamaah": [...]}, kita ambil array-nya
+    // Jika masih kosong, fallback ke array kosong
+    data = (result.record && result.record.jamaah) ? result.record.jamaah : [];
+    
+    if (data.length === 0) {
+      // Jika database kosong, kita bisa isi dengan data awal (opsional)
+      // Untuk sementara kita biarkan kosong agar Anda bisa input dari awal.
+    }
+    
+    render();
+  } catch (error) {
+    console.error("Error:", error);
+    document.getElementById('listContainer').innerHTML = '<div class="empty" style="color:#dc2626">Gagal memuat data. Periksa koneksi internet atau API Key Anda.</div>';
+  }
+}
+
+/* ===== FUNGSI SIMPAN KE SERVER ===== */
+async function saveDataToServer(newDataArray) {
+  try {
+    const response = await fetch(JSONBIN_URL, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN_API_KEY
+      },
+      body: JSON.stringify({ "jamaah": newDataArray })
+    });
+    
+    if (!response.ok) {
+       const errBody = await response.text();
+       console.error("Server Error:", errBody);
+       throw new Error('Gagal menyimpan data ke server');
+    }
+    return true;
+  } catch (error) {
+    console.error("Error:", error);
+    alert("⚠️ GAGAL MENYIMPAN KE SERVER!\n\nPastikan API Key sudah benar dan koneksi internet stabil.");
     return false;
   }
 }
 
-function loadData(){
-  try{
-    const s=localStorage.getItem(STORAGE_KEY);
-    data = s ? JSON.parse(s) : JSON.parse(JSON.stringify(INITIAL_DATA));
-    if(!Array.isArray(data)||data.length===0) data=JSON.parse(JSON.stringify(INITIAL_DATA));
-  }catch(e){ data=JSON.parse(JSON.stringify(INITIAL_DATA)); }
-}
 function esc(s){ return s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function render(){
+  if(!data) return;
+  
   const q=document.getElementById('searchInput').value.toLowerCase().trim();
   const fA=document.getElementById('filterAmalan').value;
   const fS=document.getElementById('filterStatus').value;
@@ -277,7 +259,7 @@ function render(){
 
   const container=document.getElementById('listContainer');
   if(!filteredData.length){
-    container.innerHTML='<div class="empty">Tidak ada data yang cocok</div>';
+    container.innerHTML='<div class="empty">Belum ada data. Klik "+ Tambah Jamaah" untuk mulai.</div>';
   }else{
     container.innerHTML=filteredData.map(d=>{
       const i=data.indexOf(d);
@@ -317,7 +299,7 @@ function updateFilters(){
 }
 
 const LABELS = {
-  status: 'Status', // Tambahkan label status
+  status: 'Status',
   ttl:'Tempat, Tgl Lahir', alamat:'Alamat', hp:'No. HP/WA', telp:'Telp Keluarga',
   pekerjaan:'Pekerjaan', pendidikan:'Pendidikan', pasangan:'Suami/Istri',
   ayah:'Nama Ayah', ibu:'Nama Ibu', masuk:'Masuk TN', suluk:'Suluk Terakhir',
@@ -338,11 +320,10 @@ function openDetail(idx){
     let val = d[key] || '-';
     let cls = (val==='-' || val==='') ? 'empty-val' : '';
     
-    // Jika yang ditampilkan adalah status, beri warna khusus
     if(key === 'status'){
       if(val === 'Aktif') val = '<span style="color:#16a34a;font-weight:600">Aktif</span>';
       else if(val === 'Non Aktif') val = '<span style="color:#dc2626;font-weight:600">Non Aktif</span>';
-      cls = ''; // Hapus class empty jika berisi warna
+      cls = ''; 
     } else {
       if(val==='') val='-';
       val = esc(val);
@@ -389,10 +370,7 @@ function openForm(){
   document.getElementById('editMode').style.display='block';
   
   document.getElementById('editIndex').value='';
-  
-  // Kosongkan form
   FIELDS.forEach(f=>document.getElementById('f_'+f).value='');
-  // Set default status ke Aktif untuk form baru
   document.getElementById('f_status').value='Aktif'; 
   
   document.getElementById('deleteWrapper').innerHTML = '';
@@ -409,8 +387,13 @@ function cancelEdit(){
   else openDetail(currentIndex);
 }
 
-function saveData(e){
+async function saveData(e){
   e.preventDefault();
+  const btn = e.target.querySelector('button[type="submit"]') || document.querySelector('.btn-primary');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = 'Menyimpan...';
+  btn.disabled = true;
+
   const idx=document.getElementById('editIndex').value;
   const obj={}; 
   FIELDS.forEach(f=>obj[f]=document.getElementById('f_'+f).value.trim());
@@ -419,31 +402,35 @@ function saveData(e){
 
   if(idx===''){
     newDataArray.push(obj);
-    if (saveDataToStorage(newDataArray)) {
+    if (await saveDataToServer(newDataArray)) {
       data = newDataArray;
-      showToast('✅ Jamaah baru berhasil disimpan');
+      showToast('✅ Jamaah baru berhasil disimpan ke server');
       closeModal();
+      render();
     }
   } else {
     newDataArray[parseInt(idx)] = obj;
-    if (saveDataToStorage(newDataArray)) {
+    if (await saveDataToServer(newDataArray)) {
       data = newDataArray;
-      showToast('✅ Perubahan berhasil disimpan');
+      showToast('✅ Perubahan berhasil disimpan ke server');
       currentIndex = parseInt(idx);
       openDetail(currentIndex);
+      render();
     }
   }
-  render();
+  
+  btn.innerHTML = originalText;
+  btn.disabled = false;
 }
 
-function deleteData(i){
+async function deleteData(i){
   if(!confirm(`Hapus data "${data[i].nama}" secara permanen?`))return;
   let newDataArray = JSON.parse(JSON.stringify(data));
   newDataArray.splice(i,1); 
   
-  if (saveDataToStorage(newDataArray)) {
+  if (await saveDataToServer(newDataArray)) {
     data = newDataArray;
-    showToast('🗑️ Data dihapus');
+    showToast('🗑️ Data dihapus dari server');
     closeModal(); 
     render(); 
   }
@@ -452,16 +439,6 @@ function deleteData(i){
 function closeModal(){ 
   document.getElementById('modalOverlay').classList.remove('active'); 
   currentIndex=-1;
-}
-
-function resetData(){
-  if(!confirm('Reset semua data ke kondisi awal? Perubahan Anda akan hilang.'))return;
-  let initialArray = JSON.parse(JSON.stringify(INITIAL_DATA));
-  if (saveDataToStorage(initialArray)) {
-    data = initialArray;
-    render(); 
-    showToast('↺ Data direset ke awal');
-  }
 }
 
 function exportCSV(){
@@ -486,7 +463,8 @@ document.getElementById('filterStatus').addEventListener('change',render);
 document.getElementById('modalOverlay').addEventListener('click',e=>{ if(e.target.id==='modalOverlay')closeModal(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeModal(); });
 
-loadData(); render();
+// Jalankan saat halaman dimuat
+loadDataFromServer();
 </script>
 </body>
 </html>
