@@ -233,6 +233,10 @@ async function saveDataToServer(newDataArray) {
        console.error("Server Error:", errBody);
        throw new Error('Gagal menyimpan data ke server');
     }
+    
+    // Simpan ke cache lokal setelah berhasil simpan ke server
+    localStorage.setItem('mzpc_cache', JSON.stringify(newDataArray));
+    
     return true;
   } catch (error) {
     console.error("Error:", error);
@@ -463,8 +467,21 @@ document.getElementById('filterStatus').addEventListener('change',render);
 document.getElementById('modalOverlay').addEventListener('click',e=>{ if(e.target.id==='modalOverlay')closeModal(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeModal(); });
 
-/* ===== FUNGSI LOAD DATA DARI SERVER ===== */
+/* ===== FUNGSI LOAD DATA DARI SERVER (DENGAN CACHE) ===== */
 async function loadDataFromServer() {
+  // 1. Tampilkan data dari cache lokal (jika ada) agar layar langsung terisi
+  const cache = localStorage.getItem('mzpc_cache');
+  if (cache) {
+    try {
+      data = JSON.parse(cache);
+      render();
+    } catch(e) {}
+  } else {
+    // Jika belum ada cache sama sekali, tampilkan teks loading
+    document.getElementById('listContainer').innerHTML = '<div class="empty">Memuat data dari server (mohon tunggu)...</div>';
+  }
+
+  // 2. Ambil data terbaru dari server di latar belakang
   try {
     const response = await fetch(`${JSONBIN_URL}/latest`, {
       method: 'GET',
@@ -478,7 +495,6 @@ async function loadDataFromServer() {
     const result = await response.json();
     let dataDariServer = [];
     
-    // Membaca format data dari JSONBin
     if (result.record) {
        if (Array.isArray(result.record)) {
            dataDariServer = result.record;
@@ -487,18 +503,18 @@ async function loadDataFromServer() {
        }
     }
     
-    // JIKA DATABASE MASIH KOSONG, OTOMATIS ISI DENGAN DATA AWAL
-    if (dataDariServer.length === 0) {
-       dataDariServer = INITIAL_DATA; 
-       // Simpan data awal ini ke JSONBin agar sinkron
-       await saveDataToServer(dataDariServer);
-    }
-
     data = dataDariServer;
+    
+    // Simpan data terbaru ke cache lokal
+    localStorage.setItem('mzpc_cache', JSON.stringify(data));
+    
     render();
     
   } catch (error) {
     console.error("Error:", error);
-    document.getElementById('listContainer').innerHTML = '<div class="empty" style="color:#dc2626">Gagal memuat data. Periksa koneksi internet atau API Key Anda.</div>';
+    // Jika gagal mengambil data dari server, tapi kita punya cache, biarkan layar menampilkan cache.
+    if (!cache) {
+       document.getElementById('listContainer').innerHTML = '<div class="empty" style="color:#dc2626">Gagal memuat data. Periksa koneksi internet atau API Key Anda.</div>';
+    }
   }
 }
